@@ -1,0 +1,34 @@
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies
+vendor/
+node_modules/
+
+# Local databases and generated exports
+*.sqlite
+*.sqlite3
+*.db
+*.sql.gz
+
+# Logs and runtime files
+*.log
+*.pid
+
+# IDE and editor files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+
+# Operating-system files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# PHP/web server generated files
+uploads/
+cache/
+tmp/
