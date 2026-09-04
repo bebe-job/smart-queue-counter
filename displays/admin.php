@@ -9,10 +9,10 @@
     <!-- External Custom CSS -->
     <link rel="stylesheet" href="../assets/styles/style.css">
 </head>
-<body class="p-6">
+<body class="bg-gray-100 min-h-screen font-sans">
 
     <!-- Top Header -->
-    <header class="max-w-6xl mx-auto flex justify-between items-center mb-6 bg-white p-4 rounded-lg shadow-sm border">
+    <header class="w-full bg-white px-8 py-4 shadow-sm border-b mb-6 flex justify-between items-center">
         <h1 class="text-2xl font-bold text-gray-800">Smart Queue Counter <span class="text-sm font-normal text-gray-500">| Admin Dashboard</span></h1>
         <div id="liveClock" class="text-gray-500 font-medium">---, -- --, ---- ~ --:--:-- --</div>
     </header>
