@@ -85,3 +85,147 @@ body {
 .btn-secondary:hover {
     background-color: #d1d5db;
 }
+
+.btn-primary:disabled,
+.btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Keep the viewport fixed; constrain scrolling to content inside the cards. */
+html {
+    height: 100%;
+    overflow: hidden;
+}
+
+body.dashboard-screen {
+    margin: 0;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-screen > header {
+    flex: 0 0 auto;
+    margin-bottom: 0;
+    gap: 0.5rem 1.5rem;
+    flex-wrap: wrap;
+}
+
+.dashboard-stage {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(0.75rem, 3vh, 2rem);
+    overflow: hidden;
+}
+
+.public-layout,
+.admin-layout {
+    width: 100%;
+    max-width: 72rem;
+    min-height: 0;
+    min-width: 0;
+}
+
+.public-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    grid-template-rows: minmax(0, 1fr);
+    gap: clamp(0.75rem, 2vw, 1.5rem);
+    height: min(100%, 36rem);
+}
+
+.public-layout > .queue-card {
+    min-height: 0;
+    min-width: 0;
+    padding: clamp(0.75rem, 2.5vh, 2rem);
+}
+
+.waiting-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.waiting-heading {
+    flex-shrink: 0;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+#waitingListContainer {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    padding-right: 0.25rem;
+}
+
+.serving-card {
+    overflow: auto;
+    overscroll-behavior: contain;
+}
+
+.serving-card > * {
+    flex-shrink: 0;
+}
+
+.public-screen .serving-number {
+    font-size: clamp(2.5rem, 11vh, 6rem);
+    overflow-wrap: anywhere;
+}
+
+.public-screen .serving-details {
+    margin-block: clamp(0.5rem, 3vh, 2rem);
+}
+
+.admin-layout {
+    max-height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+@media (max-width: 767px) {
+    .dashboard-screen > header {
+        padding: 0.75rem 1rem;
+    }
+
+    .dashboard-screen > header h1 {
+        font-size: 1.125rem;
+    }
+
+    .dashboard-screen #liveClock {
+        font-size: 0.75rem;
+    }
+
+    .public-layout {
+        height: 100%;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: minmax(0, 3fr) minmax(0, 2fr);
+    }
+
+    .public-screen .serving-details {
+        margin-block: 0.5rem;
+    }
+
+    .public-screen .serving-number {
+        font-size: clamp(2rem, 7vh, 3.5rem);
+    }
+
+    .public-screen #getTicketButton {
+        margin-top: 0.5rem;
+        padding: 0.625rem;
+    }
+
+    .waiting-heading {
+        margin-bottom: 0.75rem;
+    }
+}

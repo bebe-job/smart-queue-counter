@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="820" viewBox="0 0 1200 820">
+ <rect width="1200" height="820" fill="#f4f7fb"/>
+ <style>text{font-family:Arial,sans-serif;fill:#172b43}.title{font-size:32px;font-weight:bold}.label{font-size:20px;font-weight:bold}.small{font-size:17px}.wire{fill:none;stroke-width:5;stroke-linejoin:round;stroke-linecap:round}</style>
+ <text x="60" y="64" class="title">Smart Queue Counter · ESP32 wiring</text>
+ <text x="60" y="98" class="small">Matches smartqueue/smartqueue.ino · GPIO labels, not physical pin positions</text>
+ <rect x="65" y="180" width="305" height="410" rx="20" fill="#18354c"/>
+ <rect x="100" y="205" width="235" height="96" rx="8" fill="#becad6"/>
+ <text x="217" y="245" text-anchor="middle" class="label">ESP32-WROOM-32</text>
+ <text x="217" y="276" text-anchor="middle" class="small">Logical connection view</text>
+ <g fill="#fff" font-family="Arial" font-size="20" font-weight="bold">
+ <text x="105" y="345" fill="#fff">3V3</text><text x="105" y="405" fill="#fff">GPIO14</text>
+ <text x="105" y="465" fill="#fff">GPIO27</text><text x="105" y="555" fill="#fff">GND</text></g>
+ <g fill="#e3b850"><circle cx="370" cy="338" r="8"/><circle cx="370" cy="398" r="8"/><circle cx="370" cy="458" r="8"/><circle cx="370" cy="548" r="8"/></g>
+ <rect x="170" y="572" width="96" height="35" rx="5" fill="#9caebf"/>
+ <path d="M218 607 V665" stroke="#65768a" stroke-width="12"/>
+ <text x="80" y="697" class="small">USB cable → computer / board power</text>
+ <path class="wire" stroke="#de4d54" d="M370 338 H435 V185 H1040 V295"/>
+ <text x="655" y="171" class="small" fill="#de4d54">3.3V supply</text>
+ <path class="wire" stroke="#de4d54" d="M665 185 V280"/>
+ <path class="wire" stroke="#267ed0" d="M370 398 H665 V370"/>
+ <text x="450" y="382" class="small">Button signal</text>
+ <circle cx="665" cy="398" r="7" fill="#267ed0"/>
+ <circle cx="665" cy="280" r="6" fill="#172b43"/>
+ <circle cx="665" cy="370" r="6" fill="#172b43"/>
+ <path d="M665 360 L700 294" stroke="#172b43" stroke-width="5" fill="none"/>
+ <text x="725" y="307" class="label">Momentary button</text>
+ <text x="725" y="337" class="small">Normally open</text>
+ <path class="wire" stroke="#267ed0" d="M665 398 V448"/>
+ <path d="M665 448 l-12 10 24 14 -24 14 24 14 -24 14 12 10" fill="none" stroke="#172b43" stroke-width="4"/>
+ <path class="wire" stroke="#263544" d="M665 524 V620"/>
+ <text x="706" y="477" class="label">10 kΩ resistor</text>
+ <text x="706" y="504" class="small">Pull-down: GPIO14 → GND</text>
+ <rect x="930" y="295" width="205" height="255" rx="16" fill="#fff" stroke="#ccd7e4" stroke-width="2"/>
+ <circle cx="1035" cy="372" r="43" fill="#263544"/>
+ <circle cx="1035" cy="372" r="11" fill="#111c28"/>
+ <text x="1033" y="442" text-anchor="middle" class="label">Active buzzer</text>
+ <text x="1033" y="469" text-anchor="middle" class="small">3-pin, 3.3V rated</text>
+ <text x="1054" y="322" class="small">VCC</text>
+ <text x="946" y="407" class="small">IN / S</text>
+ <text x="1030" y="529" class="small">GND</text>
+ <path class="wire" stroke="#19a292" d="M370 458 H475 V570 H895 V398 H930"/>
+ <text x="490" y="555" class="small">GPIO27 → buzzer IN / S</text>
+ <path class="wire" stroke="#263544" d="M370 548 H415 V620 H1040 V550"/>
+ <circle cx="665" cy="620" r="7" fill="#263544"/>
+ <text x="750" y="651" class="small">Common ground</text>
+ <rect x="60" y="728" width="1080" height="64" rx="12" fill="#e5edf6"/>
+ <text x="80" y="754" class="small">Power off before wiring. For a 4-leg button, use two terminals that connect only when pressed.</text>
+ <text x="80" y="780" class="small">Current code: LOW-trigger buzzer; change BUZZER_ON for a HIGH-trigger module. Idle button LOW; pressed HIGH.</text>
+</svg>

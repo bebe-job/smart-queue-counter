@@ -9,7 +9,7 @@
     <!-- External Custom CSS -->
     <link rel="stylesheet" href="../assets/styles/style.css">
 </head>
-<body class="bg-gray-100 min-h-screen font-sans">
+<body class="dashboard-screen admin-screen bg-gray-100 font-sans">
 
     <!-- Top Header -->
     <header class="w-full bg-white px-8 py-4 shadow-sm border-b mb-6 flex justify-between items-center">
@@ -17,7 +17,8 @@
         <div id="liveClock" class="text-gray-500 font-medium">---, -- --, ---- ~ --:--:-- --</div>
     </header>
 
-    <main class="max-w-6xl mx-auto space-y-6">
+    <div class="dashboard-stage">
+    <main class="admin-layout space-y-6">
 
         <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
 
@@ -36,13 +37,14 @@
 
                 <div class="grid grid-cols-2 gap-4 mt-4">
                     <button class="btn-secondary">Recall Current Customer</button>
-                    <button class="btn-secondary">Pause / Maintenance</button>
+                    <button id="pauseQueueButton" onclick="setQueueStatus()" class="btn-secondary" disabled>Checking queue...</button>
                 </div>
 
                 <div class="mt-6 pt-4 border-t flex justify-between items-center">
                     <span class="text-sm font-semibold text-gray-600">Queue Status</span>
-                    <span class="badge badge-green">ACCEPTING CUSTOMERS</span>
+                    <span id="queueStatusBadge" class="badge badge-gray" role="status">CHECKING...</span>
                 </div>
+                <p id="queueStatusMessage" class="text-sm text-gray-500 mt-4" role="status"></p>
             </section>
 
             <!-- Live Sensor Diagnostics Card -->
@@ -89,9 +91,51 @@
         </section>
 
     </main>
+    </div>
 
     <!-- JavaScript -->
     <script>
+        let queueActive = null;
+        let changingQueueStatus = false;
+        let statusRevision = 0;
+
+        function renderQueueStatus(active) {
+            queueActive = active;
+            const button = document.getElementById('pauseQueueButton');
+            button.disabled = changingQueueStatus || active === null;
+            button.innerText = changingQueueStatus ? 'Saving...' : active === null
+                ? 'Checking queue...' : active ? 'Pause / Maintenance' : 'Resume Queue';
+            const badge = document.getElementById('queueStatusBadge');
+            badge.className = 'badge ' + (active === null ? 'badge-gray' : active ? 'badge-green' : 'badge-orange');
+            badge.innerText = active === null ? 'STATUS UNAVAILABLE' : active ? 'ACCEPTING CUSTOMERS' : 'PAUSED / MAINTENANCE';
+        }
+
+        async function setQueueStatus() {
+            if (changingQueueStatus || queueActive === null) return;
+            const nextActive = !queueActive;
+            changingQueueStatus = true;
+            statusRevision++;
+            renderQueueStatus(queueActive);
+            const message = document.getElementById('queueStatusMessage');
+            try {
+                const formData = new FormData();
+                formData.append('action', 'set_queue_status');
+                formData.append('is_active', nextActive ? '1' : '0');
+                const res = await fetch('../api/api.php', { method: 'POST', body: formData });
+                const result = await res.json();
+                if (!res.ok || result.status !== 'success') throw new Error(result.message || 'Unable to change queue status.');
+                renderQueueStatus(result.is_active);
+                message.innerText = result.is_active ? 'Ticket requests are open again.' : 'New tickets are paused. You can still serve customers already waiting.';
+            } catch (err) {
+                renderQueueStatus(null);
+                message.innerText = err.message;
+            } finally {
+                changingQueueStatus = false;
+                renderQueueStatus(queueActive);
+                fetchAdminData();
+            }
+        }
+
         function updateClock() {
             const now = new Date();
             document.getElementById('liveClock').innerText = now.toLocaleString('en-US', {
@@ -103,9 +147,14 @@
         updateClock();
 
         async function fetchAdminData() {
+            if (changingQueueStatus) return;
+            const revision = statusRevision;
             try {
-                const res = await fetch('../api/api.php?action=get_dashboard_data');
+                const res = await fetch('../api/api.php?action=get_dashboard_data', { cache: 'no-store' });
                 const data = await res.json();
+                if (revision !== statusRevision) return;
+                if (!res.ok || typeof data.is_active !== 'boolean') throw new Error('Queue status unavailable. Retrying...');
+                renderQueueStatus(data.is_active);
 
                 document.getElementById('adminNowServing').innerText = data.now_serving !== "None" 
                     ? '#' + String(data.now_serving).padStart(4, '0') 
@@ -123,6 +172,8 @@
                 }
 
             } catch (err) {
+                if (revision !== statusRevision) return;
+                renderQueueStatus(null);
                 console.error('Error fetching admin data:', err);
             }
         }

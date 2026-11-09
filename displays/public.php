@@ -9,7 +9,7 @@
     <!-- External Custom CSS -->
     <link rel="stylesheet" href="../assets/styles/style.css">
 </head>
-<body class="bg-gray-100 min-h-screen font-sans">
+<body class="dashboard-screen public-screen bg-gray-100 font-sans">
 
     <!-- Top Header -->
     <header class="w-full bg-white px-8 py-4 shadow-sm border-b mb-6 flex justify-between items-center">
@@ -18,18 +18,18 @@
     </header>
 
     <!-- Main Container -->
-    <main class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6">
+    <div class="dashboard-stage">
+    <main class="public-layout">
 
         <!-- Left Side: Now Serving Card -->
-        <section class="md:col-span-7 queue-card p-8 flex flex-col justify-between">
+        <section class="serving-card queue-card p-8 flex flex-col justify-between">
             <div>
                 <span class="badge badge-green">NOW SERVING</span>
 
-                <div class="my-8 text-center">
+                <div class="serving-details my-8 text-center">
                     <h2 id="nowServingNumber" class="serving-number">#0000</h2>
                     <p class="text-sm font-semibold text-gray-500 mt-2">
-                        <span class="inline-block w-2.5 h-2.5 rounded-full bg-green-500 mr-1"></span>
-                        Counter 1: Active
+                        <span id="publicQueueStatus" role="status">Counter 1: Checking status...</span>
                     </p>
                 </div>
             </div>
@@ -49,29 +49,44 @@
             </div>
 
             <!-- Get Ticket Button -->
-            <button onclick="requestTicket()" class="btn-primary mt-6 text-lg">
-                Get A Ticket
+            <button id="getTicketButton" onclick="requestTicket()" class="btn-primary mt-6 text-lg" disabled>
+                Checking queue...
             </button>
+            <p id="ticketMessage" class="text-sm text-gray-500 mt-2" role="status"></p>
         </section>
 
         <!-- Right Side: Next in Line -->
-        <section class="md:col-span-5 queue-card p-6 flex flex-col justify-between">
-            <div>
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-bold text-gray-800">Next in Line</h3>
+        <section class="waiting-card queue-card p-6">
+                <div class="waiting-heading flex justify-between items-center mb-6">
+                    <h3 id="waitingHeading" class="text-xl font-bold text-gray-800">Next in Line</h3>
                     <span id="waitingCountBadge" class="badge badge-orange">0 WAITING</span>
                 </div>
 
-                <div id="waitingListContainer" class="space-y-3">
+                <div id="waitingListContainer" class="space-y-3" tabindex="0" role="region" aria-labelledby="waitingHeading">
                     <p class="text-gray-400 text-sm italic">Loading waiting list...</p>
                 </div>
-            </div>
         </section>
 
     </main>
+    </div>
 
     <!-- JavaScript -->
     <script>
+        let queueActive = null;
+        let requestingTicket = false;
+        let ticketRevision = 0;
+
+        function renderQueueStatus(active) {
+            queueActive = active;
+            const button = document.getElementById('getTicketButton');
+            button.disabled = active !== true || requestingTicket;
+            button.innerText = requestingTicket ? 'Getting ticket...' : active === null
+                ? 'Checking queue...' : active ? 'Get A Ticket' : 'Queue Paused';
+            document.getElementById('publicQueueStatus').innerText = active === null
+                ? 'Counter 1: Status unavailable — reconnecting...'
+                : active ? 'Counter 1: Active' : 'Counter 1: Paused / Maintenance';
+        }
+
         function updateClock() {
             const now = new Date();
             document.getElementById('liveClock').innerText = now.toLocaleString('en-US', {
@@ -83,9 +98,14 @@
         updateClock();
 
         async function fetchDashboardData() {
+            if (requestingTicket) return;
+            const revision = ticketRevision;
             try {
-                const res = await fetch('../api/api.php?action=get_dashboard_data');
+                const res = await fetch('../api/api.php?action=get_dashboard_data', { cache: 'no-store' });
                 const data = await res.json();
+                if (revision !== ticketRevision) return;
+                if (!res.ok || typeof data.is_active !== 'boolean') throw new Error('Queue status unavailable.');
+                renderQueueStatus(data.is_active);
 
                 document.getElementById('nowServingNumber').innerText = data.now_serving !== "None" 
                     ? '#' + String(data.now_serving).padStart(4, '0') 
@@ -102,6 +122,7 @@
 
                 const listContainer = document.getElementById('waitingListContainer');
                 const waitingBadge = document.getElementById('waitingCountBadge');
+                const scrollPosition = listContainer.scrollTop;
                 listContainer.innerHTML = '';
 
                 waitingBadge.innerText = `${data.next_in_line.length} WAITING`;
@@ -119,23 +140,43 @@
                 } else {
                     listContainer.innerHTML = '<p class="text-gray-400 text-sm italic">No customers currently waiting.</p>';
                 }
+                listContainer.scrollTop = scrollPosition;
 
             } catch (err) {
+                if (revision !== ticketRevision) return;
+                renderQueueStatus(null);
                 console.error('Error fetching queue data:', err);
             }
         }
 
         async function requestTicket() {
+            if (queueActive !== true || requestingTicket) return;
+            requestingTicket = true;
+            ticketRevision++;
+            renderQueueStatus(queueActive);
+            const message = document.getElementById('ticketMessage');
+            message.innerText = '';
             try {
                 const formData = new FormData();
                 formData.append('action', 'new_ticket');
                 const res = await fetch('../api/api.php', { method: 'POST', body: formData });
                 const result = await res.json();
-                if (result.status === 'success') {
-                    fetchDashboardData();
+                if (res.ok && result.status === 'success') {
+                    message.innerText = 'Your ticket: #' + String(result.queue_number).padStart(4, '0');
+                } else if (result.status === 'paused') {
+                    renderQueueStatus(false);
+                    message.innerText = result.message;
+                } else {
+                    throw new Error(result.message || 'Unable to get a ticket. Please try again.');
                 }
             } catch (err) {
+                renderQueueStatus(null);
+                message.innerText = 'Unable to confirm your ticket. Please check with the counter before trying again.';
                 console.error('Error creating ticket:', err);
+            } finally {
+                requestingTicket = false;
+                renderQueueStatus(queueActive);
+                fetchDashboardData();
             }
         }
 
